@@ -1,4 +1,4 @@
-# DB Explorer 0.2.1 preview
+# DB Explorer 0.2.2 preview
 
 Read-only PostgreSQL/MySQL explorer for desktop and Docker. The desktop app includes its backend and drivers; install it and open a connection without installing Node or a helper service.
 
@@ -15,7 +15,7 @@ Read-only PostgreSQL/MySQL explorer for desktop and Docker. The desktop app incl
 - Windows x64: `win-x64.exe` installer.
 - Linux x64: `.AppImage` or `.deb`.
 
-For a Mac DMG, open the disk image and drag DB Explorer into Applications. The ZIP contains the same `.app`. These are preview builds: publisher signing/notarization certificates are not configured, so macOS Gatekeeper or Windows SmartScreen may block or warn. Native CI checks app startup; this is not a full clean-machine installation acceptance test. Do not treat an unsigned preview as a signed public release.
+For a Mac DMG, open the disk image and drag DB Explorer into Applications. The ZIP contains the same `.app`. Mac previews use ad-hoc signatures. These are preview builds: publisher signing/notarization certificates are not configured, so macOS Gatekeeper or Windows SmartScreen may block or warn. Native CI checks app startup; this is not a full clean-machine installation acceptance test. Do not treat an unsigned preview as a signed public release.
 
 ## Docker
 

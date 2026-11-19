@@ -1,6 +1,6 @@
 {
   "name": "db-explorer",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "private": true,
   "description": "Read-only MySQL and PostgreSQL explorer for web and desktop",
   "author": "DB Explorer",
@@ -25,8 +25,8 @@
     "check": "npm run typecheck && npm test && npm run build",
     "start": "node --env-file=.env backend/dist/main.js",
     "desktop": "npm run build && electron .",
-    "desktop:pack": "npm run build && electron-builder --dir",
-    "desktop:dist": "npm run build && electron-builder",
+    "desktop:pack": "npm run build && node scripts/package-desktop.mjs --dir",
+    "desktop:dist": "npm run build && node scripts/package-desktop.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test:desktop": "node scripts/desktop-smoke.mjs",

@@ -27,3 +27,5 @@ The remote databases had no published host ports. A localhost database target co
 - Private repository: https://github.com/TonyCross23/db-explorer. Native installer CI and release publication are configured; their remote run status is reported separately from local checks.
 - Public signing certificates and Apple credentials must be provisioned by the publisher. Linux packages are internal/unsigned candidates; Linux package generation plus executable startup does not replace a clean-machine installer acceptance test.
 - No authenticated production database session or production migration was performed. The UI is read-only and requires read-only database grants for production use.
+
+Version 0.2.2 corrects empty optional CI signing secrets and uses ad-hoc signing for macOS previews. Native release CI verifies packaging and startup for each operating system.
