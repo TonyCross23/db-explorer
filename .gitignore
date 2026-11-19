@@ -1,0 +1,14 @@
+node_modules/
+dist/
+release/
+.env
+.env.*
+!.env.example
+data/
+playwright-report/
+test-results/
+coverage/
+*.log
+.DS_Store
+
+.test-tls/

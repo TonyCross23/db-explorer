@@ -1,0 +1,118 @@
+name: Release desktop and container
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: npm }
+      - run: npm ci --ignore-scripts
+      - run: node scripts/check-release-version.mjs
+      - run: npm run format:check && npm run check
+      - run: node scripts/test-certificates.mjs
+      - run: docker compose -f compose.test.yaml up -d --wait --wait-timeout 180
+      - run: npm run test:integration
+        env: { DB_EXPLORER_INTEGRATION: '1' }
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - run: docker build -t db-explorer:ci .
+      - run: node scripts/docker-smoke.mjs db-explorer:ci
+        env: { DB_EXPLORER_INTEGRATION: '1' }
+      - if: always()
+        run: docker compose -f compose.test.yaml down --volumes
+  desktop:
+    needs: verify
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    environment: desktop-${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: npm }
+      - run: npm ci --ignore-scripts
+      - run: node node_modules/electron/install.js
+      - run: npm run desktop:dist -- --publish never
+        env:
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      - name: Check packaged desktop startup on Linux
+        if: runner.os == 'Linux'
+        run: xvfb-run -a npm run test:desktop
+        env: { DB_EXPLORER_TEST_NO_SANDBOX: '1' }
+      - name: Check packaged desktop startup on native Windows or macOS
+        if: runner.os != 'Linux'
+        run: npm run test:desktop
+      - run: node scripts/checksums.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: 'desktop-${{ matrix.os }}'
+          path: |
+            release/*.AppImage
+            release/*.deb
+            release/*.exe
+            release/*.dmg
+            release/*.zip
+            release/SHA256SUMS.txt
+          if-no-files-found: error
+  container:
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions: { contents: read, packages: write }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          {
+            registry: ghcr.io,
+            username: '${{ github.actor }}',
+            password: '${{ secrets.GITHUB_TOKEN }}',
+          }
+      - name: Image name
+        id: image
+        shell: bash
+        run: echo "name=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+      - uses: docker/metadata-action@v5
+        id: metadata
+        with:
+          images: '${{ steps.image.outputs.name }}'
+          tags: |
+            type=ref,event=tag
+            type=ref,event=branch
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: '${{ steps.metadata.outputs.tags }}'
+          labels: '${{ steps.metadata.outputs.labels }}'
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [desktop, container]
+    runs-on: ubuntu-latest
+    permissions: { contents: write }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24 }
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: desktop-*
+          path: release
+          merge-multiple: true
+      - run: node scripts/checksums.mjs
+      - name: Publish downloadable preview release
+        env: { GH_TOKEN: '${{ secrets.GITHUB_TOKEN }}' }
+        run: gh release create "$GITHUB_REF_NAME" release/* --verify-tag --title "DB Explorer $GITHUB_REF_NAME" --notes-file docs/RELEASE-NOTES.md --prerelease

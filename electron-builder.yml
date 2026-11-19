@@ -1,0 +1,41 @@
+appId: com.dbexplorer.desktop
+productName: DB Explorer
+copyright: Copyright DB Explorer contributors
+asar: true
+npmRebuild: false
+directories:
+  output: release
+files:
+  - desktop/main.cjs
+  - dist/server.cjs
+  - frontend/dist/**/*
+  - frontend/public/icons/icon-512.png
+  - package.json
+artifactName: DB-Explorer-${version}-${os}-${arch}.${ext}
+linux:
+  syncDesktopName: true
+  target:
+    - AppImage
+    - deb
+  category: Development
+  icon: frontend/public/icons/icon-512.png
+  maintainer: DB Explorer contributors
+win:
+  target: nsis
+  icon: frontend/public/icons/icon-512.png
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+mac:
+  target:
+    - target: dmg
+      arch: [x64, arm64]
+    - target: zip
+      arch: [x64, arm64]
+  category: public.app-category.developer-tools
+  icon: frontend/public/icons/icon-512.png
+  hardenedRuntime: true
+  gatekeeperAssess: false
+publish: null

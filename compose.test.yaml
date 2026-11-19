@@ -1,0 +1,46 @@
+# Disposable synthetic fixtures only. No application/prod credentials are used.
+name: db-explorer-tests
+services:
+  postgres:
+    image: postgres:17-alpine
+    entrypoint: [/bin/sh, -ec]
+    command:
+      - |
+        cp /test-tls/server.key /tmp/test-server.key
+        chown postgres:postgres /tmp/test-server.key
+        chmod 600 /tmp/test-server.key
+        exec docker-entrypoint.sh postgres -c ssl=on -c ssl_cert_file=/test-tls/server.crt -c ssl_key_file=/tmp/test-server.key
+    environment:
+      POSTGRES_PASSWORD: fixture_admin_only
+      POSTGRES_DB: explorer_test
+    ports: ['127.0.0.1:55432:5432']
+    tmpfs: [/var/lib/postgresql/data]
+    volumes:
+      [
+        './tests/fixtures/postgres.sql:/docker-entrypoint-initdb.d/seed.sql:ro',
+        './.test-tls:/test-tls:ro',
+      ]
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U postgres -d explorer_test']
+      interval: 2s
+      timeout: 5s
+      retries: 60
+  mysql:
+    image: mysql:8.4
+    command: [--ssl-cert=/test-tls/server.crt, --ssl-key=/test-tls/server.key]
+    environment:
+      MYSQL_ROOT_PASSWORD: fixture_admin_only
+      MYSQL_DATABASE: explorer_test
+    ports: ['127.0.0.1:53306:3306']
+    tmpfs: [/var/lib/mysql]
+    volumes:
+      [
+        './tests/fixtures/mysql.sql:/docker-entrypoint-initdb.d/seed.sql:ro',
+        './.test-tls:/test-tls:ro',
+      ]
+    healthcheck:
+      test:
+        [CMD-SHELL, "mysql -h127.0.0.1 -ureader -pfixture_reader_only -e 'SELECT 1' explorer_test"]
+      interval: 3s
+      timeout: 5s
+      retries: 60

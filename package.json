@@ -1,0 +1,48 @@
+{
+  "name": "db-explorer",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Read-only MySQL and PostgreSQL explorer for web and desktop",
+  "author": "DB Explorer",
+  "license": "MIT",
+  "main": "desktop/main.cjs",
+  "workspaces": [
+    "shared",
+    "backend",
+    "frontend"
+  ],
+  "engines": {
+    "node": ">=22.16"
+  },
+  "scripts": {
+    "setup": "node scripts/setup.mjs",
+    "dev": "npm run build -w @db-explorer/shared && concurrently -k \"npm run dev -w @db-explorer/backend\" \"npm run dev -w @db-explorer/frontend\"",
+    "build": "npm run build -w @db-explorer/shared && npm run build -w @db-explorer/backend && npm run build -w @db-explorer/frontend && node scripts/bundle.mjs",
+    "typecheck": "npm run build -w @db-explorer/shared && npm run typecheck -w @db-explorer/backend && npm run typecheck -w @db-explorer/frontend",
+    "test": "npm run build -w @db-explorer/shared && vitest run",
+    "test:integration": "node scripts/integration.mjs",
+    "test:e2e": "playwright test",
+    "check": "npm run typecheck && npm test && npm run build",
+    "start": "node --env-file=.env backend/dist/main.js",
+    "desktop": "npm run build && electron .",
+    "desktop:pack": "npm run build && electron-builder --dir",
+    "desktop:dist": "npm run build && electron-builder",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test:desktop": "node scripts/desktop-smoke.mjs",
+    "test:fixtures": "node scripts/test-certificates.mjs && docker compose -f compose.test.yaml up -d --wait --wait-timeout 180"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "@types/node": "^24.0.0",
+    "concurrently": "^9.2.0",
+    "vitest": "^3.2.4",
+    "@playwright/test": "^1.56.0",
+    "esbuild": "^0.25.0",
+    "electron": "45.3.4",
+    "electron-builder": "26.18.0",
+    "prettier": "^3.6.0"
+  },
+  "homepage": "http://localhost:4317",
+  "desktopName": "db-explorer.desktop"
+}

@@ -1,0 +1,13 @@
+CREATE USER reader WITH PASSWORD 'fixture_reader_only';
+CREATE TABLE customers (id bigint PRIMARY KEY, full_name text NOT NULL, email text, city text, balance numeric(15,2), active boolean NOT NULL DEFAULT true, metadata jsonb, created_at timestamptz DEFAULT now());
+INSERT INTO customers(id,full_name,email,city,balance,metadata) SELECT i,'Customer '||i,'customer'||i||'@example.test',CASE WHEN i%3=0 THEN 'Yangon' ELSE 'Mandalay' END,i*12.50,jsonb_build_object('source','synthetic fixture') FROM generate_series(1,235) i;
+INSERT INTO customers(id,full_name,email,city,balance,metadata) VALUES (9007199254740993,'မြန်မာစာ စမ်းသပ်မှု',NULL,'Yangon',NULL,'{"note":"100%_literal"}');
+CREATE TABLE "odd table" ("odd""column" text);
+INSERT INTO "odd table" VALUES ('100%_literal'),('normal');
+CREATE VIEW active_customers AS SELECT id,full_name,email FROM customers WHERE active;
+CREATE TABLE orders (id bigint PRIMARY KEY, customer_id bigint, parent_order_id bigint, CONSTRAINT orders_customer_fk FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE SET NULL, CONSTRAINT orders_parent_fk FOREIGN KEY (parent_order_id) REFERENCES orders(id) ON DELETE SET NULL);
+CREATE TABLE order_lines (order_id bigint, line_no integer, description varchar(200), PRIMARY KEY(order_id,line_no), CONSTRAINT lines_order_fk FOREIGN KEY(order_id) REFERENCES orders(id) ON DELETE CASCADE);
+CREATE TABLE line_notes (note_id bigint PRIMARY KEY, order_id bigint, line_no integer, CONSTRAINT notes_line_fk FOREIGN KEY(order_id,line_no) REFERENCES order_lines(order_id,line_no));
+CREATE TABLE "order links" ("customer""id" bigint REFERENCES customers(id));
+GRANT USAGE ON SCHEMA public TO reader;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO reader;

@@ -1,0 +1,12 @@
+CREATE USER 'reader'@'%' IDENTIFIED BY 'fixture_reader_only';
+GRANT SELECT ON explorer_test.* TO 'reader'@'%';
+USE explorer_test;
+CREATE TABLE customers (id bigint PRIMARY KEY,full_name varchar(255) NOT NULL,email varchar(255),city varchar(80),balance decimal(15,2),metadata json,created_at timestamp DEFAULT CURRENT_TIMESTAMP);
+INSERT INTO customers (id,full_name,email,city,balance,metadata) VALUES (1,'Aye Aye','aye@example.test','Yangon',125.50,'{"source":"synthetic"}'),(2,'မောင်မောင်',NULL,'Mandalay',NULL,'{"note":"100%_literal"}'),(9007199254740993,'Large integer','big@example.test','Yangon',1.00,NULL);
+CREATE TABLE `odd table` (`odd``column` text);
+INSERT INTO `odd table` VALUES ('100%_literal'),('normal');
+CREATE VIEW customer_names AS SELECT id,full_name FROM customers;
+CREATE TABLE orders (id bigint PRIMARY KEY, customer_id bigint, parent_order_id bigint, CONSTRAINT orders_customer_fk FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE SET NULL, CONSTRAINT orders_parent_fk FOREIGN KEY (parent_order_id) REFERENCES orders(id) ON DELETE SET NULL);
+CREATE TABLE order_lines (order_id bigint, line_no integer, description varchar(200), PRIMARY KEY(order_id,line_no), CONSTRAINT lines_order_fk FOREIGN KEY(order_id) REFERENCES orders(id) ON DELETE CASCADE);
+CREATE TABLE line_notes (note_id bigint PRIMARY KEY, order_id bigint, line_no integer, CONSTRAINT notes_line_fk FOREIGN KEY(order_id,line_no) REFERENCES order_lines(order_id,line_no));
+CREATE TABLE `order links` (`customer``id` bigint, CONSTRAINT quoted_customer_fk FOREIGN KEY (`customer``id`) REFERENCES customers(id));

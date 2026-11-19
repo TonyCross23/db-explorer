@@ -1,0 +1,13 @@
+# Optional Linux SSH-agent access. The node user (UID 1000) must be able to use the socket.
+# Socket access permits signing with the agent's unlocked keys. Use a dedicated agent for shared hosting.
+services:
+  app:
+    environment:
+      SSH_AUTH_SOCK: /run/db-explorer-agent.sock
+    volumes:
+      - type: bind
+        source: ${SSH_AUTH_SOCK:?Open your SSH agent first}
+        target: /run/db-explorer-agent.sock
+        read_only: true
+        bind:
+          create_host_path: false

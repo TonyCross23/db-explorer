@@ -1,0 +1,36 @@
+name: Verify
+on:
+  push:
+    branches: [main, 'codex/**']
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: npm }
+      - run: npm ci --ignore-scripts
+        env: { ELECTRON_SKIP_BINARY_DOWNLOAD: '1' }
+      - run: npm run format:check
+      - run: npm run check
+      - run: node scripts/test-certificates.mjs
+      - run: docker compose -f compose.test.yaml up -d --wait --wait-timeout 180
+      - run: npm run test:integration
+        env: { DB_EXPLORER_INTEGRATION: '1' }
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - run: docker build -t db-explorer:ci .
+      - run: node scripts/docker-smoke.mjs db-explorer:ci
+        env: { DB_EXPLORER_INTEGRATION: '1' }
+      - if: always()
+        run: docker compose -f compose.test.yaml down --volumes
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with: { name: browser-report, path: 'playwright-report/', retention-days: 7 }
