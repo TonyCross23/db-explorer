@@ -30,7 +30,7 @@ export const useExplorerStore = defineStore('explorer', () => {
     mode: 'web' as 'web' | 'desktop',
     persistent: true,
     readOnly: true,
-    version: '0.2.0',
+    version: '0.2.1',
   });
   const diagram = ref<SchemaDiagram | null>(null),
     diagramBusy = ref(false),

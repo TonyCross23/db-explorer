@@ -1,4 +1,4 @@
-# DB Explorer 0.2.0 preview
+# DB Explorer 0.2.1 preview
 
 Read-only PostgreSQL/MySQL explorer for desktop and Docker. The desktop app includes its backend and drivers; install it and open a connection without installing Node or a helper service.
 

@@ -1,4 +1,4 @@
-# Optional Linux SSH-agent access. The node user (UID 1000) must be able to use the socket.
+# Optional Linux SSH-agent access. The agent owner must match the node user (UID 1000).
 # Socket access permits signing with the agent's unlocked keys. Use a dedicated agent for shared hosting.
 services:
   app:

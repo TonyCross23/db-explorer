@@ -1,6 +1,6 @@
 {
   "name": "db-explorer",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "description": "Read-only MySQL and PostgreSQL explorer for web and desktop",
   "author": "DB Explorer",

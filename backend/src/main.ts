@@ -86,7 +86,7 @@ export async function bootstrap(options: BootstrapOptions) {
       mode: options.mode ?? 'web',
       persistent: options.persistent !== false,
       readOnly: true,
-      version: '0.2.0',
+      version: '0.2.1',
     }),
   );
   server.post(

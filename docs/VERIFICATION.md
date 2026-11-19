@@ -1,6 +1,6 @@
 # Verification — 2026-11-19
 
-Version **0.2.0** validated on Linux x64 with Node.js 24, Electron 45.3.4, Google Chrome, MySQL 8.4, and PostgreSQL 17. All database records used during validation were disposable synthetic fixtures.
+Version **0.2.1** validated on Linux x64 with Node.js 24, Electron 45.3.4, Google Chrome, MySQL 8.4, and PostgreSQL 17. All database records used during validation were disposable synthetic fixtures.
 
 ## Passed
 

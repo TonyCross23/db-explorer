@@ -33,9 +33,13 @@ try {
       }
     }
     await chmod(socket, 0o660);
+    assert.notEqual(process.getuid(), 0, 'Run the agent smoke test as a non-root user');
+    // OpenSSH checks peer UID, in addition to socket permissions. Hosted runners use UID 1001.
     agentArgs.push(
-      '--group-add',
-      String(process.getgid()),
+      '--user',
+      `${process.getuid()}:${process.getgid()}`,
+      '-e',
+      'DB_EXPLORER_DATA_DIR=/tmp/workspace',
       '--mount',
       `type=bind,src=${socket},dst=/run/db-explorer-agent.sock,readonly`,
       '-e',
@@ -64,6 +68,11 @@ try {
     '127.0.0.1::4317',
     image,
   ]);
+  assert.notEqual(
+    docker(['exec', name, 'node', '-p', 'process.getuid()']).trim(),
+    '0',
+    'Container must remain non-root',
+  );
   const port = docker(['port', name, '4317/tcp']).trim().split(':').pop();
   let ready = false;
   for (let attempt = 0; attempt < 40; attempt++) {
